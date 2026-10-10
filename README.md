@@ -1,8 +1,13 @@
 # Holant with Binary Disequality in Lean
 
-A Lean formalization accompanying **A Dichotomy for Complex Boolean Holant
-with Binary Disequality**, by Chenghua Liu and Boning Meng
-([arXiv:2609.00219](https://arxiv.org/abs/2609.00219)).
+A Lean formalization of **A Dichotomy for Complex Boolean Holant
+with Binary Disequality**, by Chenghua Liu and Boning Meng.
+
+The [original paper is available on arXiv](https://arxiv.org/abs/2609.00219).
+This repository includes the latest revised manuscript, with simplifications,
+revisions and corrections to the original version. The Lean formalization
+accompanies this revised manuscript; see the
+[manuscript correspondence and corrections](docs/statements.md).
 
 This repository accompanies paper 1, concerning binary disequality. It contains
 the three main complexity dichotomies in that paper, uniform recognition
