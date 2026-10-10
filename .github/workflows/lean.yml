@@ -1,0 +1,113 @@
+name: Lean checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: lean-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  HOLANT_BUILD_THREADS: 1
+  LEAN_NUM_THREADS: 1
+  PYTHONDONTWRITEBYTECODE: 1
+jobs:
+  source:
+    name: Source and manuscript checks
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Check source, statement boundary and exact corrections
+        run: |
+          python3 scripts/release.py scan
+          python3 -m py_compile scripts/*.py
+          bash -n scripts/*.sh
+          python3 scripts/check_errata.py
+  build:
+    name: Clean proof library and axiom audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Prepare runner memory and disk
+        run: bash scripts/prepare_ci.sh
+      - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
+        with:
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          use-mathlib-cache: true
+      - name: Rebuild the complete library and check every declaration
+        run: bash scripts/env.sh python3 scripts/verify.py --phase build
+      - name: Archive the verified Linux build
+        run: tar --exclude='*.setup.json' -I 'zstd -T2 -3' -cf "$RUNNER_TEMP/holant-build.tar.zst" .lake/build .lake/release/build
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: linux-build
+          path: ${{ runner.temp }}/holant-build.tar.zst
+          compression-level: 0
+          retention-days: 1
+      - name: Retain build verification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: verification-build
+          include-hidden-files: true
+          path: .lake/release/build/
+  verify:
+    name: ${{ matrix.name }}
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - phase: kernel
+            name: Complete kernel replay
+          - phase: comparator
+            name: Official Comparator
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Prepare runner memory and disk
+        run: bash scripts/prepare_ci.sh
+      - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
+        with:
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          use-mathlib-cache: true
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: linux-build
+          path: ${{ runner.temp }}/verified-build
+      - name: Restore this run's verified Linux build
+        run: |
+          tar --zstd -xf "$RUNNER_TEMP/verified-build/holant-build.tar.zst"
+          rm "$RUNNER_TEMP/verified-build/holant-build.tar.zst"
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        if: matrix.phase == 'comparator'
+        with:
+          go-version: '1.24.x'
+          cache: false
+      - name: Start the user systemd manager
+        if: matrix.phase == 'comparator'
+        run: |
+          sudo loginctl enable-linger "$USER"
+          sudo systemctl start "user@$(id -u).service"
+          echo "XDG_RUNTIME_DIR=/run/user/$(id -u)" >> "$GITHUB_ENV"
+          echo "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus" >> "$GITHUB_ENV"
+      - name: Verify source and object hashes, then run the selected check
+        run: bash scripts/env.sh python3 scripts/verify.py --phase "${{ matrix.phase }}"
+      - name: Retain verification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: verification-${{ matrix.phase }}
+          include-hidden-files: true
+          path: |
+            .lake/release/${{ matrix.phase }}/
+            .lake/release/comparator-*.log
