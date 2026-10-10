@@ -33,10 +33,10 @@ Do not run `lake update` to reproduce this release. Missing dependencies are
 fetched at the revisions in `lake-manifest.json`. The environment wrapper also
 checks existing dependency checkouts and selects Command Line Tools on macOS.
 
-This is a large proof library. A full verification should use at least 64 GiB
-of RAM; 128 GiB is recommended. Individual Lean compiler processes have a
-12 GB memory limit. `HOLANT_BUILD_THREADS` controls concurrent Lean work and
-defaults to 4. Build products and downloaded tools stay in ignored directories.
+This is a large proof library. `HOLANT_BUILD_THREADS` controls build concurrency
+and defaults to 4; lower it if memory is limited. Build products and downloaded
+tools stay in ignored directories. See [CI resources](docs/verification.md#resources-and-continuous-integration)
+for the verification configuration.
 
 ## Statement and proof separation
 

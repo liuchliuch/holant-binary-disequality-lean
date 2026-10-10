@@ -84,24 +84,26 @@ external kernels are not enabled in this release.
 
 ## Resources and continuous integration
 
-The complete library is large. Use a machine with at least 64 GiB RAM; 128 GiB
-is recommended for full replay and comparison. Set `HOLANT_BUILD_THREADS=1`
-for sequential compilation if needed. Downloaded dependencies and build output
-can occupy tens of gigabytes; they are excluded from the release archive.
+The complete library is large. Downloaded dependencies and build output can
+occupy tens of gigabytes; they are excluded from the release archive.
+`HOLANT_BUILD_THREADS` controls build concurrency and defaults to 4 locally.
+The compiler option `-M12000` sets a per-process Lean allocation limit, not a
+measured memory requirement for the full verification.
 
 GitHub Actions runs on pushes, pull requests and manual dispatches using
 Ubuntu 24.04 runners. The build job starts without project compilation products
 and audits every project declaration. Two downstream jobs verify the source
 and object hashes of that exact build artifact before independently running
-the complete environment replay and official Comparator. The Linux jobs use
-one Lean worker and additional swap to fit the large library. Comparator
+the complete environment replay and official Comparator. The runners have
+16 GB RAM and are configured with 32 GiB swap. Compilation uses two build
+workers; each downstream check runs separately with one worker. These are
+execution settings, not minimum hardware requirements. Comparator
 preflight checks enforce read-only files, TCP restrictions and the AF_UNIX guard.
 Reports and logs are retained as workflow artifacts; generated records are not
 checked into the source repository.
 
-`HOLANT_BUILD_THREADS` controls Lean worker threads. Local full verification
-runs the expensive checks sequentially. CI separates them into jobs with
-independent time and memory budgets.
+Local full verification runs the expensive checks sequentially. CI separates
+them into jobs with independent time and memory budgets.
 
 ## Manuscript
 
