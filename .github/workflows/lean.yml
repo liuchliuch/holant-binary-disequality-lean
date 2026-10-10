@@ -22,12 +22,15 @@ jobs:
         run: |
           python3 scripts/release.py scan
           python3 -m py_compile scripts/*.py
-          bash -n scripts/*.sh
+          for script in scripts/*.sh; do bash -n "$script"; done
           python3 scripts/check_errata.py
   build:
     name: Clean proof library and axiom audit
     runs-on: ubuntu-24.04
     timeout-minutes: 350
+    env:
+      HOLANT_BUILD_THREADS: 2
+      LEAN_NUM_THREADS: 2
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Prepare runner memory and disk
