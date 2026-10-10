@@ -80,7 +80,7 @@ def negative_test(binary, env, trusted_local):
          "Challenge and solution theorem statement do not match: 'Holant.Theorems.binaryDisequality'"),
         ('extra-axiom', 'axiom extraProof : Statements.BinaryDisequality G\n'
          'theorem binaryDisequality : Statements.BinaryDisequality G := extraProof G\n',
-         'Holant.Theorems.extraProof')]
+         "Illegal axiom detected: 'Holant.Theorems.extraProof'")]
     conf=json.loads((ROOT/'Verification/comparator.json').read_text())
     conf['solution_module']='Verification.ComparatorMismatch'
     conf['theorem_names']=['Holant.Theorems.binaryDisequality']
@@ -93,8 +93,6 @@ def negative_test(binary, env, trusted_local):
             (ROOT/'.lake/release'/('comparator-'+label+'.log')).write_text(result.stdout)
             if result.returncode==0 or rejection not in result.stdout:
                 raise RuntimeError('Expected Comparator rejection missing: '+label)
-            if label=='extra-axiom' and 'axiom' not in result.stdout.lower():
-                raise RuntimeError('Extra axiom was not rejected by the axiom check')
             print('COMPARATOR NEGATIVE TEST PASSED: '+label,flush=True)
     finally:
         source.unlink()
