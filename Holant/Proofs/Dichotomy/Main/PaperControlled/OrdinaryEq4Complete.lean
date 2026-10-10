@@ -1,0 +1,4 @@
+import Holant.Proofs.Dichotomy.Main.PaperControlledOrdinaryEq4
+namespace Holant.LocalDrafts.RemoteWork.RootIntegrationV1.PaperControlled.OrdinaryEq4Complete
+export PaperControlledOrdinaryEq4 (classified current_classified)
+end Holant.LocalDrafts.RemoteWork.RootIntegrationV1.PaperControlled.OrdinaryEq4Complete

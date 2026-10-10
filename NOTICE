@@ -1,0 +1,11 @@
+Holant Lean Formalization
+Copyright 2026 Chenghua Liu and Boning Meng.
+
+The Lean source, verification scripts and repository documentation are
+licensed under the Apache License, Version 2.0.
+
+The manuscript in manuscript/ is excluded from the Apache license and
+remains under its authors' copyright. See manuscript/LICENSE.
+
+Lean, Mathlib, Comparator, lean4export and Landrun are external dependencies
+with their own licenses. They are not included in this source archive.

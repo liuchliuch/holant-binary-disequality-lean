@@ -1,0 +1,15 @@
+{
+  "challenge_module": "Verification.Challenge",
+  "solution_module": "Verification.Solution",
+  "theorem_names": [
+    "Holant.Theorems.binaryDisequality",
+    "Holant.Theorems.literalEquality",
+    "Holant.Theorems.quaternary",
+    "Holant.Theorems.tractableEvaluation"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ]
+}

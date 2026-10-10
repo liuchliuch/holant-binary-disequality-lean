@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "Please cite the accompanying manuscript when using this formalization."
+type: software
+title: "Holant with Binary Disequality in Lean"
+version: 1.0.0
+date-released: 2026-10-10
+license: Apache-2.0
+authors:
+  - family-names: Liu
+    given-names: Chenghua
+  - family-names: Meng
+    given-names: Boning
+preferred-citation:
+  type: unpublished
+  title: "A Dichotomy for Complex Boolean Holant with Binary Disequality"
+  year: 2026
+  authors:
+    - family-names: Liu
+      given-names: Chenghua
+    - family-names: Meng
+      given-names: Boning
+repository-code: "https://github.com/liuchliuch/holant-binary-disequality-lean"

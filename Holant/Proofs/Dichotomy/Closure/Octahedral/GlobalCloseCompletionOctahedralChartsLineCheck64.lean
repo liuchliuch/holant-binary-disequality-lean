@@ -1,0 +1,7 @@
+import Holant.Proofs.Dichotomy.Closure.Octahedral.GlobalCloseCompletionOctahedralChartsData
+set_option maxHeartbeats 30000000
+set_option maxRecDepth 100000
+set_option Elab.async false
+namespace Holant.LocalDrafts.RemoteWork.RootIntegrationV1.GlobalCloseCompletionOctahedralGeometry.RankTwo.HarmonicProjectivities
+theorem line_data_64 : LineData 64 := by decide +kernel
+end Holant.LocalDrafts.RemoteWork.RootIntegrationV1.GlobalCloseCompletionOctahedralGeometry.RankTwo.HarmonicProjectivities

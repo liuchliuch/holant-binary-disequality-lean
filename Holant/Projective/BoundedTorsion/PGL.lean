@@ -1,0 +1,167 @@
+import Holant.Projective.BoundedTorsion.ProjectiveClasses
+import Mathlib.LinearAlgebra.Matrix.GeneralLinearGroup.Defs
+import Mathlib.GroupTheory.QuotientGroup.Defs
+
+/-! An actual projective linear group and its subgroup attached to a literal
+projective matrix group.  The final adapter consumes finite projective image as
+an explicit intermediate result. -/
+
+namespace Holant.Projective.BoundedTorsion
+open Holant.Certificates.MatchingContractionClosure
+noncomputable section
+variable (K : Type*) [Field K]
+
+/-- The subgroup of invertible scalar matrices in GL₂. -/
+def scalarSubgroup : Subgroup (Matrix.GeneralLinearGroup Bool K) :=
+  (Matrix.GeneralLinearGroup.scalar Bool).range
+
+instance scalarSubgroup_normal : (scalarSubgroup K).Normal where
+  conj_mem := by
+    rintro _ ⟨c, rfl⟩ g
+    refine ⟨c, ?_⟩
+    rw [← Matrix.GeneralLinearGroup.scalar_commute, mul_assoc, mul_inv_cancel, mul_one]
+
+/-- PGL₂ as the group quotient of GL₂ by its invertible scalar matrices. -/
+abbrev PGL2 := Matrix.GeneralLinearGroup Bool K ⧸ scalarSubgroup K
+
+/-- The canonical quotient homomorphism. -/
+def pglMk : Matrix.GeneralLinearGroup Bool K →* PGL2 K :=
+  QuotientGroup.mk' (scalarSubgroup K)
+
+variable {K}
+
+theorem pglMk_eq_iff_scalarUnits {A B : Matrix.GeneralLinearGroup Bool K} :
+    pglMk K A = pglMk K B ↔
+      ∃ c : Kˣ, A * Matrix.GeneralLinearGroup.scalar Bool c = B := by
+  rw [pglMk, QuotientGroup.mk'_eq_mk']
+  constructor
+  · rintro ⟨_, ⟨c, rfl⟩, h⟩
+    exact ⟨c, h⟩
+  · rintro ⟨c, h⟩
+    exact ⟨_, ⟨c, rfl⟩, h⟩
+
+/-- The genuine group quotient has precisely the literal scalar equivalence
+used by `ProjectiveClass`. -/
+theorem pglMk_eq_iff_projectiveClass_eq {A B : Matrix.GeneralLinearGroup Bool K} :
+    pglMk K A = pglMk K B ↔ projectiveClass (A : Binary (K := K)) = projectiveClass (B : Binary) := by
+  constructor
+  · intro h
+    obtain ⟨c, hc⟩ := pglMk_eq_iff_scalarUnits.mp h
+    have he : (B : Binary (K := K)) = (c : K) • (A : Binary (K := K)) := by
+      simpa only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar,
+        Matrix.scalar_apply, ← Matrix.smul_eq_mul_diagonal] using congrArg Units.val hc.symm
+    rw [he]
+    exact (projectiveClass_smul _ c.ne_zero).symm
+  · intro h
+    obtain ⟨c, hc, he⟩ := projectiveClass_eq_iff.mp h
+    apply Eq.symm
+    apply pglMk_eq_iff_scalarUnits.mpr
+    refine ⟨Units.mk0 c hc, Units.ext ?_⟩
+    change (B : Binary (K := K)) * Matrix.scalar Bool c = (A : Binary)
+    rw [Matrix.scalar_apply, ← Matrix.smul_eq_mul_diagonal]
+    exact he.symm
+
+/-- Ordinary finite order in PGL₂ is exactly finite projective order of a
+literal invertible matrix representative. -/
+theorem isOfFinOrder_pglMk_iff (U : Matrix.GeneralLinearGroup Bool K) :
+    IsOfFinOrder (pglMk K U) ↔ ProjectivelyFinite (U : Binary (K := K)) := by
+  rw [isOfFinOrder_iff_pow_eq_one]
+  constructor
+  · rintro ⟨n, hn, hp⟩
+    have he : pglMk K (U ^ n) = pglMk K 1 := by
+      rw [map_pow, map_one]
+      exact hp
+    obtain ⟨c, hc, heq⟩ := projectiveClass_eq_iff.mp
+      (pglMk_eq_iff_projectiveClass_eq.mp he)
+    exact ⟨n, hn, c, hc, heq⟩
+  · rintro ⟨n, hn, c, hc, hp⟩
+    refine ⟨n, hn, ?_⟩
+    rw [← map_pow]
+    change pglMk K (U ^ n) = pglMk K 1
+    exact pglMk_eq_iff_projectiveClass_eq.mpr
+      (projectiveClass_eq_iff.mpr ⟨c, hc, hp⟩)
+
+/-- A faithful inclusion of the group quotient in all matrix projective classes. -/
+def pglToProjectiveClass : PGL2 K → ProjectiveClass K :=
+  Quotient.lift (fun A : Matrix.GeneralLinearGroup Bool K => projectiveClass (A : Binary))
+    (fun _ _ h => pglMk_eq_iff_projectiveClass_eq.mp (Quotient.sound h))
+
+@[simp] theorem pglToProjectiveClass_mk (A : Matrix.GeneralLinearGroup Bool K) :
+    pglToProjectiveClass (pglMk K A) = projectiveClass (A : Binary (K := K)) := rfl
+
+theorem pglToProjectiveClass_injective :
+    Function.Injective (pglToProjectiveClass (K := K)) := by
+  intro a b
+  induction a using Quotient.inductionOn with
+  | h A =>
+    induction b using Quotient.inductionOn with
+    | h B => exact pglMk_eq_iff_projectiveClass_eq.mpr
+
+/-- The subgroup of invertible matrices represented by a literal projective
+matrix group. -/
+def matrixUnitSubgroup {G : Set (Binary (K := K))} (hG : ProjectiveMatrixGroup G) :
+    Subgroup (Matrix.GeneralLinearGroup Bool K) where
+  carrier := {U | (U : Binary (K := K)) ∈ G}
+  one_mem' := hG.one_mem
+  mul_mem' := fun hU hV => hG.mul_mem _ hU _ hV
+  inv_mem' := by
+    intro U hU
+    obtain ⟨V, hV, hUV, _⟩ := hG.inverse_mem U hU
+    have he : ((U⁻¹ : Matrix.GeneralLinearGroup Bool K) : Binary (K := K)) = V := by
+      calc
+        _ = (↑U⁻¹ : Binary (K := K)) * 1 := (mul_one _).symm
+        _ = (↑U⁻¹ : Binary (K := K)) * ((U : Binary (K := K)) * V) := by rw [hUV]
+        _ = V := by
+          rw [← mul_assoc]
+          change U.inv * U.val * V = V
+          rw [U.inv_val, one_mul]
+    change (↑U⁻¹ : Binary (K := K)) ∈ G
+    rw [he]
+    exact hV
+
+/-- The actual subgroup of PGL₂ generated by the matrix representatives in `G`.
+Since `G` is already a group of representatives, its image is itself a subgroup. -/
+def projectiveSubgroup {G : Set (Binary (K := K))} (hG : ProjectiveMatrixGroup G) :
+    Subgroup (PGL2 K) := (matrixUnitSubgroup hG).map (pglMk K)
+
+/-- Projective classes of members of the genuine PGL subgroup come from `G`. -/
+theorem projectiveSubgroup_class_mem {G : Set (Binary (K := K))}
+    (hG : ProjectiveMatrixGroup G) {q : PGL2 K} (hq : q ∈ projectiveSubgroup hG) :
+    pglToProjectiveClass q ∈ projectiveClass '' G := by
+  obtain ⟨U, hU, rfl⟩ := hq
+  exact ⟨U, hU, rfl⟩
+
+/-- Every matrix representative in `G` occurs in the genuine group quotient. -/
+theorem exists_mem_projectiveSubgroup {G : Set (Binary (K := K))}
+    (hG : ProjectiveMatrixGroup G) {T : Binary (K := K)} (hT : T ∈ G) :
+    ∃ q ∈ projectiveSubgroup hG, pglToProjectiveClass q = projectiveClass T := by
+  let U := Matrix.GeneralLinearGroup.mkOfDetNeZero T (hG.det_ne_zero hT)
+  exact ⟨pglMk K U, ⟨U, hT, rfl⟩, rfl⟩
+
+/-- The actual PGL subgroup represents exactly the original projective classes. -/
+theorem projectiveSubgroup_image {G : Set (Binary (K := K))}
+    (hG : ProjectiveMatrixGroup G) :
+    pglToProjectiveClass '' (projectiveSubgroup hG : Set (PGL2 K)) =
+      projectiveClass '' G := by
+  ext x
+  constructor
+  · rintro ⟨q, hq, rfl⟩
+    exact projectiveSubgroup_class_mem hG hq
+  · rintro ⟨T, hT, rfl⟩
+    exact exists_mem_projectiveSubgroup hG hT
+
+/-- A finite projective image gives an actual finite subgroup of PGL₂. -/
+theorem finite_projectiveSubgroup {G : Set (Binary (K := K))}
+    (hG : ProjectiveMatrixGroup G) (hfinite : (projectiveClass '' G).Finite) :
+    Finite (projectiveSubgroup hG) := by
+  let f : projectiveSubgroup hG → (projectiveClass '' G) :=
+    fun q => ⟨pglToProjectiveClass q, projectiveSubgroup_class_mem hG q.property⟩
+  have : Finite (projectiveClass '' G) := hfinite.to_subtype
+  apply Finite.of_injective f
+  intro a b h
+  apply Subtype.ext
+  apply pglToProjectiveClass_injective
+  exact congrArg Subtype.val h
+
+end
+end Holant.Projective.BoundedTorsion

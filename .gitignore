@@ -1,0 +1,13 @@
+.lake/
+.tools/
+.DS_Store
+__pycache__/
+*.pyc
+manuscript/*.aux
+manuscript/*.log
+manuscript/*.out
+manuscript/*.toc
+manuscript/*.blg
+manuscript/*.bbl
+manuscript/*.fls
+manuscript/*.fdb_latexmk

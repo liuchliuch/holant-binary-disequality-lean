@@ -1,0 +1,12 @@
+import Holant.Proofs.Dichotomy.Closure.Octahedral.GlobalCloseCompletionOctahedralChartsData
+import Holant.Proofs.Dichotomy.Closure.Octahedral.GlobalCloseCompletionOctahedralQuotientCache
+set_option maxHeartbeats 30000000
+set_option maxRecDepth 100000
+set_option Elab.async false
+namespace Holant.LocalDrafts.RemoteWork.RootIntegrationV1.GlobalCloseCompletionOctahedralGeometry.RankTwo.HarmonicProjectivities
+theorem quotient_data_3_74 : QuotientData 3 74  := by
+  unfold QuotientData quotientScale quotientCoefficients quotientMatrix quotientKey quotientOrder quotientValue quotientKeys
+  simp_rw [←Holant.LocalDrafts.RemoteWork.RootIntegrationV1.GlobalCloseCompletionOctahedralGeometry.RankTwo.QuotientEnumeration.cachedIndices_eq,
+    ←Holant.LocalDrafts.RemoteWork.RootIntegrationV1.GlobalCloseCompletionOctahedralGeometry.RankTwo.QuotientEnumeration.cachedProjected_eq]
+  decide +kernel
+end Holant.LocalDrafts.RemoteWork.RootIntegrationV1.GlobalCloseCompletionOctahedralGeometry.RankTwo.HarmonicProjectivities
