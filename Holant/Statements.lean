@@ -1,4 +1,4 @@
-import Holant.Tractable.KPresentation
+import Holant.Tractable.STOC2027
 import Holant.Proofs.Algorithms.OriginalFamily
 import Holant.Proofs.Counting.Hardness
 import Holant.Complexity.EdgeSubdivision.Labels
@@ -25,27 +25,30 @@ abbrev equalityEdges : Fin 1 → Kernel AlgebraicComplex := fun _ => Signature.e
 abbrev disequalityEdges : Fin 1 → Kernel AlgebraicComplex := fun _ => Signature.disequality
 abbrev withDisequality := extendedSignatures G disequalityEdges
 
-/-- Theorem 1.1: ordinary Holant(F,X), with equality on graph edges. -/
+/-- Theorems 1.1 and F.1.1: ordinary Holant(F,X), with the direct reduced
+criterion on the original family with X adjoined and equality on graph edges. -/
 def BinaryDisequality : Prop :=
-  let criterion := TractX (familyAction sourceKBasis (family G ∪
-    {(⟨2, kernelSignature Signature.equality⟩ : AnySignature AlgebraicComplex)}))
+  let criterion := ReTract (family G ∪
+    {(⟨2, kernelSignature Signature.disequality⟩ : AnySignature AlgebraicComplex)})
   let input := RawClosedNetwork.validatedEncoding (s+1) 1 (targetArity s a)
   let output := (OriginalFamily.presentation (withDisequality G) equalityEdges).encoding
   let value := OriginalFamily.value (withDisequality G) equalityEdges
   (criterion → InFP input output value) ∧
   (¬criterion → WitnessCountingHard input output value)
 
-/-- Theorem 1.2: native disequality edges and a literal equality in F. -/
-def LiteralEquality : Prop :=
+/-- Theorem F.5.2: equality-accessible K-Holant, with native disequality edges
+and a literal equality in the unchanged original family. -/
+def EqualityAccessible : Prop :=
   (⟨2, kernelSignature Signature.equality⟩ : AnySignature AlgebraicComplex) ∈ family G →
-  let criterion := TractX (familyAction sourceKBasis (family G))
+  let criterion := ReTract (familyAction sourceKBasis (family G))
   let input := RawClosedNetwork.validatedEncoding s 1 a
   let output := (OriginalFamily.presentation G disequalityEdges).encoding
   let value := OriginalFamily.value G disequalityEdges
   (criterion → InFP input output value) ∧
   (¬criterion → WitnessCountingHard input output value)
 
-/-- Theorem 1.3: the endpoint-nondegenerate tensor-prime quaternary condition.
+/-- Theorems 1.2 and F.1.2: the endpoint-nondegenerate irreducible quaternary
+condition. The reduced criterion explicitly uses native disequality edges.
 No identity is added to the original signature family. -/
 def Quaternary : Prop :=
   ∀ q : Signature AlgebraicComplex 4,
@@ -53,19 +56,22 @@ def Quaternary : Prop :=
     (∀ x, Holant.weight x % 2 = 1 → q x = 0) →
     q (fun _ => false) * q (fun _ => true) ≠ 0 →
     Holant.Certificates.EqualityQuaternary.TensorPrime q →
-    let criterion := Tract (familyAction sourceKBasis (family G))
+    let criterion := ReTractX (family G)
     let input := RawClosedNetwork.validatedEncoding s 1 a
     let output := (OriginalFamily.presentation G disequalityEdges).encoding
     let value := OriginalFamily.value G disequalityEdges
     (criterion → InFP input output value) ∧
     (¬criterion → WitnessCountingHard input output value)
 
-/-- The evaluation assertion of Theorem 2.19, with all seven Tract clauses. -/
+/-- The evaluation assertion of Theorem F.3.3, with all seven Tract clauses. -/
 def TractableEvaluation : Prop :=
   Tract (family G) →
     InFP (RawClosedNetwork.validatedEncoding s 1 a)
       (OriginalFamily.presentation G equalityEdges).encoding
       (OriginalFamily.value G equalityEdges)
+
+/-- Compatibility name for the former public equality statement (old Theorem 1.2). -/
+abbrev LiteralEquality : Prop := EqualityAccessible G
 
 end Holant.Statements
 end

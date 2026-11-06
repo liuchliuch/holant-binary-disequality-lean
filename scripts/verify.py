@@ -53,6 +53,7 @@ def main():
     try:
         save();dependencies()
         if args.phase=='all':phase('manuscript-build',['bash','scripts/build_manuscript.sh'])
+        phase('manuscript-source',[sys.executable,'scripts/check_manuscript.py'])
         record['source_scan']=scan()
         before=manifest();record['source_manifest_sha256']=snapshot_hash(before)
         (logs/'source-manifest.json').write_text(json.dumps(before,indent=2)+'\n')

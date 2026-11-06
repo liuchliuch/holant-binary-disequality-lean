@@ -11,6 +11,8 @@ import subprocess
 import sys
 import zipfile
 
+from check_manuscript import check as check_manuscript
+
 ROOT = Path(__file__).resolve().parent.parent
 ALLOWED_AXIOMS = ['propext', 'Classical.choice', 'Quot.sound']
 ENTRY_POINTS = ['Holant', 'Verification.Challenge', 'Verification.Solution']
@@ -107,6 +109,7 @@ def release_files():
 
 
 def scan():
+    manuscript = check_manuscript()
     graph = closure(ENTRY_POINTS)
     all_modules = {str(p.relative_to(ROOT).with_suffix('')).replace('/','.')
                    for d in ['Holant','Verification'] for p in (ROOT/d).rglob('*.lean')}
@@ -138,7 +141,8 @@ def scan():
             raise ValueError('Build artifact in release: '+rel)
     return {'project_modules':len(graph),'proof_modules':len(closure(['Holant'])),
             'statement_modules':len(trusted),'allowed_axioms':ALLOWED_AXIOMS,
-            'challenge_holes':4,'unreachable_modules':0,'english_only':True}
+            'challenge_holes':4,'unreachable_modules':0,'english_only':True,
+            'manuscript':manuscript}
 
 
 def write_axiom_audit(path):

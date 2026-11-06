@@ -11,7 +11,7 @@ variable {s : ℕ} {a : ℕ → ℕ}
 variable (G : (i : Fin s) → Signature AlgebraicComplex (a i.val))
 
 theorem binaryDisequality : Statements.BinaryDisequality G := by sorry
-theorem literalEquality : Statements.LiteralEquality G := by sorry
+theorem equalityAccessible : Statements.EqualityAccessible G := by sorry
 theorem quaternary : Statements.Quaternary G := by sorry
 theorem tractableEvaluation : Statements.TractableEvaluation G := by sorry
 

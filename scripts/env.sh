@@ -7,6 +7,6 @@ if [[ "$(uname -s)" == Darwin && -d /Library/Developer/CommandLineTools ]]; then
   export PATH="/Library/Developer/CommandLineTools/usr/bin:$HOME/.elan/bin:$PATH"
 fi
 export MATHLIB_NO_CACHE_ON_UPDATE=1
-export LEAN_NUM_THREADS="${HOLANT_BUILD_THREADS:-4}"
+export LEAN_NUM_THREADS="${HOLANT_BUILD_THREADS:-2}"
 python3 scripts/release.py dependencies
 exec "$@"

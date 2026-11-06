@@ -15,7 +15,7 @@ require `lake update`.
 ## Full release check
 
 In addition to the Lean build tools, the full check requires `latexmk`,
-pdfLaTeX, BibTeX and `qpdf` to rebuild and validate the bundled manuscript.
+pdfLaTeX and `qpdf` to rebuild and validate the bundled manuscript.
 
 For previously trusted local source on macOS or Linux:
 
@@ -25,7 +25,8 @@ bash scripts/env.sh python3 scripts/verify.py --trusted-local
 
 The verification driver checks:
 
-1. English-only release text, complete imports, reachability, and absence of
+1. Exact Overleaf source digest and current manuscript labels, followed by
+   English-only release text, complete imports, reachability, and absence of
    local machine paths, credential-like content and build artifacts.
 2. A real build of the public library and solution.
 3. Axiom dependencies of every imported project declaration, allowing only
@@ -50,7 +51,10 @@ if the source changed after that record was produced.
 
 Read `Holant/Statements.lean` and its definitions first. Its import closure
 excludes the main proof and classification assembly. `Verification/Challenge.lean`
-contains four theorem holes with the public names and expected types.
+contains four theorem holes with the current public names and expected types:
+`binaryDisequality`, `equalityAccessible`, `quaternary`, and
+`tractableEvaluation`. The compatibility alias `literalEquality` is not a
+fifth target.
 `Verification/Solution.lean` imports only the proved public entry.
 
 The challenge's four `sorry` bodies are allowed only in the reference file.
@@ -86,7 +90,7 @@ external kernels are not enabled in this release.
 
 The complete library is large. Downloaded dependencies and build output can
 occupy tens of gigabytes; they are excluded from the release archive.
-`HOLANT_BUILD_THREADS` controls build concurrency and defaults to 4 locally.
+`HOLANT_BUILD_THREADS` controls build concurrency and defaults to 2 locally.
 The compiler option `-M12000` sets a per-process Lean allocation limit, not a
 measured memory requirement for the full verification.
 
@@ -99,7 +103,10 @@ the complete environment replay and official Comparator. The runners have
 workers; each downstream check runs separately with one worker. These are
 execution settings, not minimum hardware requirements. Comparator
 preflight checks enforce read-only files, TCP restrictions and the AF_UNIX guard.
-Reports and logs are retained as workflow artifacts; generated records are not
+The source job checks the immutable Overleaf TeX digest; the local full driver
+rebuilds the PDF and checks fresh theorem numbers as well. CI checks the bundled
+PDF's integrity but does not rebuild TeX. Reports and logs are retained as
+workflow artifacts; generated records are not
 checked into the source repository.
 
 Local full verification runs the expensive checks sequentially. CI separates
@@ -107,9 +114,10 @@ them into jobs with independent time and memory budgets.
 
 ## Manuscript
 
-The manuscript directory contains `paper.tex`, `paper1.bib`, and the compiled
-`paper.pdf`. Its figures are defined in the LaTeX source. A standard TeX Live
-installation with `latexmk`, pdfLaTeX and BibTeX is sufficient:
+The manuscript directory contains the exact Overleaf `paper.tex`, its export
+provenance in `source.json`, and the rebuilt `paper.pdf`. References and figures
+are embedded in the TeX. A standard TeX Live installation with `latexmk` and
+pdfLaTeX is sufficient:
 
 ```sh
 bash scripts/build_manuscript.sh

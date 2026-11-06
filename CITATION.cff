@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: "Please cite the accompanying manuscript when using this formalization."
 type: software
 title: "Holant with Binary Disequality in Lean"
-version: 1.0.0
-date-released: 2026-10-10
+version: 1.1.0
+date-released: 2026-11-06
 license: Apache-2.0
 authors:
   - family-names: Liu

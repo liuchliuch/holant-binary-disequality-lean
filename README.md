@@ -4,15 +4,20 @@ A Lean formalization of **A Dichotomy for Complex Boolean Holant
 with Binary Disequality**, by Chenghua Liu and Boning Meng.
 
 The [original paper is available on arXiv](https://arxiv.org/abs/2609.00219).
-This repository includes the latest revised manuscript, with simplifications,
-revisions and corrections to the original version. The Lean formalization
-accompanies this revised manuscript; see the
+This repository includes the November 6, 2026 Overleaf source snapshot of
+`stoc2027-DEQ.tex`, with its short submission and embedded full paper. The
+exact source digest and export provenance are recorded in
+[manuscript/source.json](manuscript/source.json). The Lean formalization
+uses this snapshot's reduced criteria and public naming; see the
 [manuscript correspondence and corrections](docs/statements.md).
 
 This repository accompanies paper 1, concerning binary disequality. It contains
 the three main complexity dichotomies in that paper, uniform recognition
 programs on exact algebraic input, the seven-branch tractable evaluation theorem,
-and the structural lemmas and exact finite certificates used by the manuscript.
+and retained structural lemmas and exact finite certificates.
+[The structural correspondence review](docs/structural-correspondence.md)
+records naming changes and the scope of supplementary results, including the
+new successor diagram that has no independent Lean path-exhaustiveness theorem.
 
 - [Read the manuscript](manuscript/paper.pdf) or [its LaTeX source](manuscript/paper.tex).
 - [Read the public statements](Holant/Statements.lean) before [their proofs](Holant/Proofs.lean).
@@ -34,7 +39,7 @@ fetched at the revisions in `lake-manifest.json`. The environment wrapper also
 checks existing dependency checkouts and selects Command Line Tools on macOS.
 
 This is a large proof library. `HOLANT_BUILD_THREADS` controls build concurrency
-and defaults to 4; lower it if memory is limited. Build products and downloaded
+and defaults to 2; lower it if memory is limited. Build products and downloaded
 tools stay in ignored directories. See [CI resources](docs/verification.md#resources-and-continuous-integration)
 for the verification configuration.
 
@@ -44,6 +49,11 @@ for the verification configuration.
 signature, graph, coefficient, complexity and tractability definitions. Its
 import closure excludes the main classification and dichotomy assembly.
 `Holant/Proofs.lean` supplies proofs of those specifications.
+The direct `ReTract(F union {X})` and native-edge `ReTractX(F)` criteria are
+connected to the retained implementations by algebraic equivalences in
+`Holant/Tractable/STOC2027.lean`, `ReducedEdgeBridge.lean` and
+`QuaternaryAnchor.lean`. The equality-accessible theorem is now F.5.2;
+`literalEquality` remains a compatibility alias.
 
 The official [Lean Comparator](https://github.com/leanprover/comparator) checks
 the four public complexity/evaluation statements against
@@ -61,6 +71,7 @@ to be decidable, without a polynomial-time recognition claim.
 A quick source-only check requires only Python:
 
 ```sh
+python3 scripts/check_manuscript.py
 python3 scripts/release.py scan
 ```
 
@@ -94,7 +105,7 @@ identifies the public interfaces and manuscript corrections.
 | `Holant/Proofs/` | Proof implementations grouped by mathematical topic |
 | `Holant/` | The transitive proof dependency closure |
 | `Verification/` | Comparator reference, solution, pinned tool revisions |
-| `manuscript/` | Corrected manuscript source, bibliography and PDF |
+| `manuscript/` | Exact Overleaf source with embedded references, provenance and rebuilt PDF |
 | `scripts/` | Build, verification and packaging commands |
 
 Only reachable Lean modules are distributed. Internal declaration names are
@@ -103,8 +114,7 @@ logs, unused proof branches, dependency caches and temporary files are excluded.
 
 ## Manuscript and licensing
 
-Build the manuscript with a TeX installation providing `latexmk`, pdfLaTeX and
-BibTeX:
+Build the manuscript with a TeX installation providing `latexmk`, pdfLaTeX:
 
 ```sh
 bash scripts/build_manuscript.sh
